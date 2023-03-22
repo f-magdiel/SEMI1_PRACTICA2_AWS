@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState } from "react"
 import { Button, Divider, Form } from "semantic-ui-react";
 import { useNavigate } from "react-router-dom";
-
+import "./Style.css"
 
 
 function LoginForm() {
@@ -61,8 +61,8 @@ function LoginForm() {
                     <div className="Login-Form-Button">
                         <Button className="ui black button" type="submit" onClick={verifyCredentials}>Iniciar Sesion</Button>
                     </div>
-                    <div>
-                    <Button negative type="button" onClick={() => { navigate("/FaceID") }}>Inicio de sesion por foto</Button>
+                    <div className="Login-Form-Button">
+                    <Button className="ui black button" type="button" onClick={() => { navigate("/FaceID") }}>Iniciar Sesión por Foto</Button>
                     </div>
                 </Form>
             </div>

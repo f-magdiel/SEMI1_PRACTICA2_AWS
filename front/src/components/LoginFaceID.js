@@ -3,78 +3,55 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Divider, Form, Grid, Icon } from "semantic-ui-react";
-import FileInput from "./FileInput";
+import Webcam from "react-webcam";
+import {Camera} from 'react-html5-camera-photo';
+import 'react-html5-camera-photo/build/css/index.css';
+
 
 
 
 function LoginFaceID(){
-    const url = "http://localhost:5000/rds/albums";
-    const url1 = "http://localhost:5000/rds/NuevaFotoAlbum";
-    const [base64Image, setBase64Image] = useState('');
-    //const [selectOptions, setSelectOptions] = useState([])
-    const [ImgUrl, setImgUrl] = useState("");
-    const [name, setName] = useState("");
-    const [userData, setUserData] = useState({
-        image: []
-    })
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        axios.get(url)
-        .then(response => {
-            console.log(response);
-            setSelectOptions(response.data);
-        }).catch(err => {
-            console.log("ERROR"+err);
-        });
-        
-    }, [])
+    const [photo, setPhoto] = useState(null);
+    const [image, setImage] = useState(null);
 
+    const handleTakePhoto = (dataUri) => {
+        setPhoto(dataUri);
+        const base64Image = btoa(dataUri);
+        setImage(base64Image);
+        console.log(base64Image)
 
-
-    const handleFilesChange = (event) => {
-        const files = event.target.files;
-        if (!event.target.files[0]) {
-            console.log("No eligio archivo")
-            return;
-        }
-        if (userData.image.length > 0) {
-            userData.image[0] = (event.target.files[0]);
-        } else {
-            userData.image.push(event.target.files[0]);
-        }
-        setImgUrl(URL.createObjectURL(event.target.files[0]));
-        console.log(event.target.files[0].type);
-        const file =  files[0]
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          setBase64Image(reader.result);
-        };
     }
-    
 
-    const sendRequest = () => {
-        axios.post(url1, {
-            idAlbum: idAlbum.idAlbum,
-            base64: base64Image.split(',')[1],
-            namefoto: name.name + "."+userData.image[0].name.split('.')[1]
+    const handleResetPhoto = () => {
+        setPhoto(null);
+    }
+
+    const sendDatatoServer = () => {
+        axios.post("http://localhost:5000/rds/faceid", {
+            imagen64: image
         })
-        .then(responseData => {
-            alert("Archivo subido con exito.")
-            navigate("/dashboard");
+        .then(response => {
+            console.log(response.data.login);
+            if (response.data.login == true){
+                sessionStorage.setItem("user", 1111111111);
+                alert("Usuario logueado correctamente");
+                navigate("/dashboard");
+            }else if (response.data.login == false){
+                alert("Credenciales incorrectas, por favor revise los datos");
+            }
         }).catch(err => {
             console.log(err);
         });
-        
     }
+    
     return (
 
         <div className="upload-page">
 
             <div className="upload-page-header">
                 <div className="upload-page-header-txt">
-                    <label> Subir Archivo </label><Icon name="upload" />
+                    <label> Tomar foto </label><Icon name="photo" />
                 </div>
                 <Divider />
             </div>
@@ -86,13 +63,27 @@ function LoginFaceID(){
                             
                             <Grid.Column width={8}>
                                 <Grid.Row>
-                                    <FileInput change={handleFilesChange} ImgUrl={ImgUrl} title={"Preview (solo imagenes)"}></FileInput>
+                                
                                 </Grid.Row>
                             </Grid.Column>
 
                             <Grid.Row centered >
-                               
-                                <Button color="blue" type="submit" onClick={sendRequest}>Compobar Inicio de Sesion</Button>
+                            {photo ? (
+                                    <div>
+                                        <PreviewPhoto photo={photo} />
+                                        <Button  className="ui black button" type="button">Iniciar Sesion</Button>
+                                        <button className="ui black button" type="button" onClick={handleResetPhoto}>Tomar otra foto</button>
+                                    </div>
+                                ) : (
+                                    <Camera
+                                    onTakePhoto={(dataUri) => {
+                                        handleTakePhoto(dataUri);
+                                    }}
+                                    width={280}
+                                    height={280}
+                                    />
+                                )}
+                                
         
                             </Grid.Row>
                         </Grid>
@@ -104,5 +95,13 @@ function LoginFaceID(){
     )
 
 }
+
+const PreviewPhoto = ({ photo }) => {
+    return (
+    <div>
+        <img src={photo} alt="preview" width="280" height="280" />
+    </div>
+    );
+};
 
 export default LoginFaceID;
