@@ -19,7 +19,7 @@ function DashboardGrid(props) {
         <div className="Dashboard-Grid">
             <Grid celled >
                 <Grid.Column width={4} textAlign = 'center' verticalAlign='middle'>
-                    <AvatarComponent imageUrl={avatar}/>
+                    <AvatarComponent descrip={username} imageUrl={avatar}/>
                 </Grid.Column>
                 <Grid.Column width={8} textAlign = 'center' verticalAlign='middle'>
                     <Header as='h1'><Icon name='id card' />Nombre Completo:</Header>

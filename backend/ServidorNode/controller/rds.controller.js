@@ -4,6 +4,14 @@ var AWS = require('aws-sdk')
 const bodyParser = require('body-parser');
 require('dotenv').config()
 const CryptoJS = require('crypto-js');
+const {
+  detectarCara,
+  detectarTexto,
+  detectarFamoso,
+  detectarEtiquetas,
+  compararFotos,
+  detectarEquipo,
+} = require('../controller/rekognition.controller')
 
 const mysql = require('mysql2/promise');
 let UsuarioLogueado = 0
@@ -41,7 +49,6 @@ function encryptPassword(password) {
   return CryptoJS.MD5(password).toString();
 }
 
-
 const NuevoUsuario = async (req, res) => {
   let body = req.body //body.user, body.name, body.password, body.base64, body.namefoto
   console.log(body)
@@ -52,7 +59,8 @@ const NuevoUsuario = async (req, res) => {
     insertar = await insertarNuevoUser(body.user, body.name, newpass)
     const url = await saveImagePerfil(body.namefoto, body.base64)
     const idUs = await ObtenerIdUsuario(body.user)
-    insertarFotoPerfil(url.Location, idUs[0].idUser)
+    
+    insertarFotoPerfil(url.Location, idUs[0].idUser, detalles)
     res.json({ mensaje: 'Insertado exitosamente', status: true })
   }else if (verificacion == true){
     res.json({ mensaje: 'Ya existe el usuario', error: "ya existe", status: false })
@@ -234,7 +242,7 @@ const saveImagePerfil = async (id, base64) =>{
   var s3 = new AWS.S3(aws_keys.s3) // se crea una variable que pueda tener acceso a las caracteristicas de S3
 
   const params = {
-    Bucket: 'practica1-g3-imagenes', // nombre
+    Bucket: 'practica2-g3-imagenes', // nombre
     Key: cadena, // Nombre de ubicacion
     Body: buff, // Imagen enn bytes
     ContentType: 'image', // tipo de contenido
@@ -245,20 +253,20 @@ const saveImagePerfil = async (id, base64) =>{
 }
 
 const BuscarUsuario = async (user) => {
-  querys = 'SELECT COUNT(idUser) AS Cont FROM usuario WHERE username = "' + user + '"'
+  querys = 'SELECT COUNT(idUser) AS Cont FROM Usuario WHERE username = "' + user + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const ObtenerIdUsuario = async(user) => {
-  querys = 'SELECT idUser FROM usuario WHERE username = "' + user + '"'
+  querys = 'SELECT idUser FROM Usuario WHERE username = "' + user + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const insertarNuevoUser = async (user, name, password) => {
   const response = await connection.query(
-    'INSERT INTO usuario (`username`, `nombre`, `pass`) VALUES (?, ?, ?)',
+    'INSERT INTO Usuario (`username`, `nombre`, `pass`) VALUES (?, ?, ?)',
     [user,name,password])
   return response
 }
@@ -269,10 +277,10 @@ const insertarFotoenAlbum = (url, idAlbum) => {
     [url, idAlbum])
 }
 
-const insertarFotoPerfil = (url, idAlbum) => {
+const insertarFotoPerfil = (url, idAlbum, detalles) => {
   connection.query(
-    'INSERT INTO fotoperfin (`urlPerfil`, `activo` ,`idUser`) VALUES (?, ?, ?)',
-    [url,1,idAlbum])
+    'INSERT INTO FotoPerfin (`urlPerfil`, `activo` ,`idUser`, `idUser`) VALUES (?, ?, ?, ?)',
+    [url,1,idAlbum,detalles])
 }
 
 const ExistesUsuario = async(user, pass) =>{

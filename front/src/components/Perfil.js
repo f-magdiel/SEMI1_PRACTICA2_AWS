@@ -6,19 +6,26 @@ import { Card, Image } from "semantic-ui-react"
 import matthew from "../images/matthew.png"
 
 function AvatarComponent(props) {
-    const [name, setName] = useState("usuario");
+    const [descrip, setDescrip] = useState("Descripcion");
     const [imageUrl, setImageUrl] = useState(matthew);
-    const [message, setMessage] = useState("welcome, ");
 
     useEffect(() => {
-        if ((props.imageUrl !== null) && (props.imageUrl !== undefined)) {
+        if ((props.descrip !== null && props.imageUrl !== null) && (props.decrip !== undefined && props.imageUrl !== undefined)) {
             setImageUrl(props.imageUrl);
+            setDescrip(props.descrip)
         }
 
-    },[, props.imageUrl])
+    },[props.descrip, props.imageUrl])
 
     return (
-        <Image src={imageUrl} size={"medium"} />
+        <Card>
+            <Image src={imageUrl} size={"medium"} />
+            <Card.Content>
+                <Card.Header>{descrip}</Card.Header>
+                <Card.Description>
+                </Card.Description>
+            </Card.Content>
+        </Card>
     )
 
 }

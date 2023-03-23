@@ -10,6 +10,7 @@ function DashboadPage() {
         username: "",
         name: "",
         avatar: "",
+        descrip: "",
     });
 
     useEffect(() => {
@@ -22,6 +23,7 @@ function DashboadPage() {
                 ["username"]: responseData.data.username,
                 ["name"]: responseData.data.nombre,
                 ["avatar"]: responseData.data.urlFoto,
+                ["descrip"]: responseData.data.detalles
             })
         }).catch(err => {
             console.log("ERROR"+err);
@@ -40,6 +42,7 @@ function DashboadPage() {
                     username={dashData.username}
                     name={dashData.name}
                     avatar={dashData.avatar} 
+                    descrip={dashData.detalles} 
                 />
             </div>
         </div>

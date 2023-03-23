@@ -8,6 +8,7 @@ import {Camera} from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 
 
+
 function LoginFaceID(){
 
     const [photo, setPhoto] = useState(null);
@@ -20,7 +21,7 @@ function LoginFaceID(){
         console.log(base64Image)
 
     }
-
+    const navigate = useNavigate();
     const handleResetPhoto = () => {
         setPhoto(null);
     }
