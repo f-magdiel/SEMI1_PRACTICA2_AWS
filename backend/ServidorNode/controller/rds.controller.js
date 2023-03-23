@@ -323,7 +323,7 @@ const insertarNuevoUser = async (user, name, password) => {
 
 const insertarFotoenAlbum = (url, idAlbum) => {
   connection.query(
-    'INSERT INTO fotopublicadas (`urlPost`, `idAlbum`) VALUES (?, ?)',
+    'INSERT INTO FotoPublicadas (`urlPost`, `idAlbum`) VALUES (?, ?)',
     [url, idAlbum])
 }
 
@@ -370,56 +370,56 @@ const ActualizarDatos = async(user,name) =>{
 }
 
 const ActualizarFoto = async() =>{
-  querys = 'UPDATE fotoperfin SET activo = 0 WHERE activo = 1 AND idUser = "' + UsuarioLogueado + '"'
+  querys = 'UPDATE FotoPerfin SET activo = 0 WHERE activo = 1 AND idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const ObtenerAlbum = async() =>{
-  querys = 'SELECT idAlbum, nameAlbum FROM album WHERE idUser = "' + UsuarioLogueado + '"'
+  querys = 'SELECT idAlbum, nameAlbum FROM Album WHERE idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const mandarPerfil = async() =>{
-  querys = 'SELECT urlPerfil FROM fotoperfin WHERE idUser = "' + UsuarioLogueado + '"'
+  querys = 'SELECT urlPerfil FROM FotoPerfin WHERE idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const mandarpublicaciones = async(variable) =>{
-  querys = 'SELECT urlPost FROM fotopublicadas WHERE idAlbum = "' + variable + '"'
+  querys = 'SELECT urlPost FROM FotoPublicadas WHERE idAlbum = "' + variable + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const ObtenerAlbumFotos = async() =>{
-  querys = 'SELECT idAlbum,nameAlbum FROM album WHERE idUser = "' + UsuarioLogueado + '"'
+  querys = 'SELECT idAlbum,nameAlbum FROM Album WHERE idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const insertarNuevoAlbum = async (name) => {
   const response = await connection.query(
-    'INSERT INTO album (`nameAlbum`, `idUser`) VALUES (?, ?)',
+    'INSERT INTO Album (`nameAlbum`, `idUser`) VALUES (?, ?)',
     [name,UsuarioLogueado])
   return response
 }
 
 const ActualizarAlbum = async(name,idAlbum) =>{
-  querys = 'UPDATE album SET nameAlbum = "'+ name +'" WHERE idAlbum = "' + idAlbum +'" AND idUser = "' + UsuarioLogueado + '"'
+  querys = 'UPDATE Album SET nameAlbum = "'+ name +'" WHERE idAlbum = "' + idAlbum +'" AND idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const EliminarFotosAlbum = async(idAlbum) =>{
-  querys = 'DELETE FROM fotopublicadas WHERE idAlbum = "' + idAlbum + '"'
+  querys = 'DELETE FROM FotoPublicadas WHERE idAlbum = "' + idAlbum + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const EliminarAlbumCs = async(idAlbum) =>{
-  querys = 'DELETE FROM album WHERE idAlbum = "' + idAlbum + '"'
+  querys = 'DELETE FROM Album WHERE idAlbum = "' + idAlbum + '"'
   const response = await connection.query(querys)
   return response
 }
