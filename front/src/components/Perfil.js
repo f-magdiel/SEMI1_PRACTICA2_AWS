@@ -10,7 +10,7 @@ function AvatarComponent(props) {
     const [imageUrl, setImageUrl] = useState(matthew);
 
     useEffect(() => {
-        if ((props.descrip !== null && props.imageUrl !== null) && (props.decrip !== undefined && props.imageUrl !== undefined)) {
+        if ((props.descrip !== null && props.imageUrl !== null) && (props.descrip !== undefined && props.imageUrl !== undefined)) {
             setImageUrl(props.imageUrl);
             setDescrip(props.descrip)
         }

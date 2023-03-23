@@ -1,17 +1,9 @@
 // se manda a llamar las credenciales de Mysql
 const aws_keys = require('../helpers/aws_keys')
 var AWS = require('aws-sdk')
-const bodyParser = require('body-parser');
+const rek = new AWS.Rekognition(aws_keys.rekognition)
 require('dotenv').config()
 const CryptoJS = require('crypto-js');
-const {
-  detectarCara,
-  detectarTexto,
-  detectarFamoso,
-  detectarEtiquetas,
-  compararFotos,
-  detectarEquipo,
-} = require('../controller/rekognition.controller')
 
 const mysql = require('mysql2/promise');
 let UsuarioLogueado = 0
@@ -49,6 +41,65 @@ function encryptPassword(password) {
   return CryptoJS.MD5(password).toString();
 }
 
+const Descripcion = async (base64) =>{
+  var imagen = base64
+  let response = ""
+  var params = {
+    Image: {
+      Bytes: Buffer.from(imagen, 'base64'), // se manda la imagen en bytes.
+    },
+    Attributes: ['ALL'], // Para que se muestren todos los atributos en la deteccion de cara. Como filtros.
+  }
+  const data = await rek.detectFaces(params).promise()
+  let nuevo = data.FaceDetails[0]
+  if (nuevo.Gender.Value === "Male"){
+    response = "Hombre"
+  }else if (nuevo.Gender.Value === "Female"){
+    response = "Mujer"
+  }
+  response += "   " + (nuevo.AgeRange.Low).toString() + " años - " + (nuevo.AgeRange.High).toString()  + " años"
+  if (nuevo.Smile.Value){
+    response += "   Sonriendo"
+  }
+  if (nuevo.Eyeglasses.Value){
+    response += "   Usa Lentes"
+  }
+  if (nuevo.Sunglasses.Value){
+    response += "   Usa Lentes de Sol"
+  }
+  if (nuevo.Beard.Value){
+    response += "   Tiene Barba"
+  }
+  if (nuevo.Mustache.Value){
+    response += "   Tiene Bigote"
+  }
+  if (nuevo.EyesOpen.Value){
+    response += "   Tiene los Ojos Abiertos"
+  }
+  if (nuevo.MouthOpen.Value){
+    response += "   Tiene la Boca Abierta"
+  }
+  if (nuevo.Emotions[0] === "SURPRISED"){
+    response += "   Sorprendido"
+  }else if (nuevo.Emotions[0] === "FEAR"){
+    response += "   Miedo"
+  }else if (nuevo.Emotions[0] === "SAD"){
+    response += "   Triste"
+  }else if (nuevo.Emotions[0] === "CONFUSED"){
+    response += "   Confundido"
+  }else if (nuevo.Emotions[0] === "HAPPY"){
+    response += "   Feliz"
+  }else if (nuevo.Emotions[0] === "ANGRY"){
+    response += "   Enojado"
+  }else if (nuevo.Emotions[0] === "CALM"){
+    response += "   Calmado"
+  }else if (nuevo.Emotions[0] === "DISGUSTED"){
+    response += "   Disgustado"
+  }
+  return response
+  
+}
+
 const NuevoUsuario = async (req, res) => {
   let body = req.body //body.user, body.name, body.password, body.base64, body.namefoto
   console.log(body)
@@ -59,7 +110,7 @@ const NuevoUsuario = async (req, res) => {
     insertar = await insertarNuevoUser(body.user, body.name, newpass)
     const url = await saveImagePerfil(body.namefoto, body.base64)
     const idUs = await ObtenerIdUsuario(body.user)
-    
+    const detalles = await Descripcion(body.base64)
     insertarFotoPerfil(url.Location, idUs[0].idUser, detalles)
     res.json({ mensaje: 'Insertado exitosamente', status: true })
   }else if (verificacion == true){
@@ -68,8 +119,6 @@ const NuevoUsuario = async (req, res) => {
     res.json({ mensaje: 'Error', error: ExisteUsuario, status: false })
   }
 }
-
-
 
 const Login = async (req, res) => {
   UsuarioLogueado = 0
@@ -91,16 +140,16 @@ const PaginaInicio = async (req, res) => {
   const DatosUsuarios = await DatosUsuario()
   const FotoPerfil = await DatosFotoPerfil()
   console.log('Datos Enviados Dashboard')
-  console.log({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil })
-  res.json({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil })
+  console.log({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
+  res.json({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
 }
 
 const DatosCredenciales = async (req, res) => {
   const DatosUsuaris = await DatosUsuarioss()
   const FotoPerfil = await DatosFotoPerfil()
   console.log('Datos Enviados Dashboard')
-  console.log({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre, pass: DatosUsuaris[0].pass ,urlFoto: FotoPerfil[0].urlPerfil })
-  res.json({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre,pass: DatosUsuaris[0].pass, urlFoto: FotoPerfil[0].urlPerfil })
+  console.log({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre, pass: DatosUsuaris[0].pass ,urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
+  res.json({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre,pass: DatosUsuaris[0].pass, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
 }
 
 const CerrarSesion = (req, res) =>{
@@ -124,26 +173,27 @@ const ActualizacionFotoPerfil = async(req,res)=>{
   let body = req.body
   const url = await saveImagePerfil(body.namefoto, body.base64)
   const actualizado2 = await ActualizarFoto()
-  insertarFotoPerfil(url.Location, UsuarioLogueado)
+  const detalles = await Descripcion(body.base64)
+  insertarFotoPerfil(url.Location, UsuarioLogueado, detalles)
   res.json({ actualizado: true, locacion: url.Location})
 }
 
 const ObtenerAlbumes = async (req, res) =>{
   const datos = await ObtenerAlbum()
-  console.log(datos)
+  //console.log(datos)
   res.json(datos)
 }
 
 const mandarFotosPerfil = async (req, res) =>{
   const datos = await mandarPerfil()
-  console.log(datos)
+  //console.log(datos)
   res.json({ fotosPerfil: datos})
 }
 
 const mandarFotosPublicaciones = async (req, res) =>{
   const datos = await ObtenerAlbumFotos()
-  console.log("datos")
-  console.log(datos)
+  //console.log("datos")
+  //console.log(datos)
   let datos1 =[]
 
    
@@ -242,7 +292,7 @@ const saveImagePerfil = async (id, base64) =>{
   var s3 = new AWS.S3(aws_keys.s3) // se crea una variable que pueda tener acceso a las caracteristicas de S3
 
   const params = {
-    Bucket: 'practica2-g3-imagenes', // nombre
+    Bucket: 'practica1-g3-imagenes', // nombre
     Key: cadena, // Nombre de ubicacion
     Body: buff, // Imagen enn bytes
     ContentType: 'image', // tipo de contenido
@@ -279,42 +329,42 @@ const insertarFotoenAlbum = (url, idAlbum) => {
 
 const insertarFotoPerfil = (url, idAlbum, detalles) => {
   connection.query(
-    'INSERT INTO FotoPerfin (`urlPerfil`, `activo` ,`idUser`, `idUser`) VALUES (?, ?, ?, ?)',
+    'INSERT INTO FotoPerfin (`urlPerfil`, `activo` ,`idUser`, `detalles`) VALUES (?, ?, ?, ?)',
     [url,1,idAlbum,detalles])
 }
 
 const ExistesUsuario = async(user, pass) =>{
-  querys = 'SELECT COUNT(idUser) AS Cont FROM usuario WHERE username = "' + user + '" AND pass = "' + pass + '"'
+  querys = 'SELECT COUNT(idUser) AS Cont FROM Usuario WHERE username = "' + user + '" AND pass = "' + pass + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const DatosUsuario = async() =>{
-  querys = 'SELECT username, nombre FROM usuario WHERE idUser = "' + UsuarioLogueado + '"'
+  querys = 'SELECT username, nombre FROM Usuario WHERE idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const DatosUsuarioss = async() =>{
-  querys = 'SELECT username, nombre, pass FROM usuario WHERE idUser = "' + UsuarioLogueado + '"'
+  querys = 'SELECT username, nombre, pass FROM Usuario WHERE idUser = "' + UsuarioLogueado + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const DatosFotoPerfil = async() =>{
-  querys = 'SELECT urlPerfil FROM fotoperfin WHERE idUser = "' + UsuarioLogueado + '" AND activo = 1'
+  querys = 'SELECT urlPerfil, detalles FROM FotoPerfin WHERE idUser = "' + UsuarioLogueado + '" AND activo = 1'
   const response = await connection.query(querys)
   return response
 }
 
 const CredencialesUsuario = async(user, pass) =>{
-  querys = 'SELECT idUser FROM usuario WHERE username = "' + user + '" AND pass = "' + pass + '"'
+  querys = 'SELECT idUser FROM Usuario WHERE username = "' + user + '" AND pass = "' + pass + '"'
   const response = await connection.query(querys)
   return response
 }
 
 const ActualizarDatos = async(user,name) =>{
-  querys = 'UPDATE usuario SET username = "'+ user +'", nombre = "' + name + '" WHERE idUser = "' + UsuarioLogueado +'"'
+  querys = 'UPDATE Usuario SET username = "'+ user +'", nombre = "' + name + '" WHERE idUser = "' + UsuarioLogueado +'"'
   const response = await connection.query(querys)
   return response
 }

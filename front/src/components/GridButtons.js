@@ -31,7 +31,7 @@ function GridButtons() {
             <Button content={"Editar Perfil"} icon={"edit"} attached={"bottom"} onClick={()=>{navigate("/editPerfil")}} /><br />
             <Button content={"Subir Foto"} icon={"upload"} attached={"bottom"} onClick={()=>{navigate("/upload")}}/><br />
             <Button content={"Ver fotos"} icon={"search"} attached={"bottom"} onClick={()=>{navigate("/verFoto")}}/><br />
-            <Button content={"Editar Albums"} icon={"add user"} attached={"bottom"} onClick={()=>{navigate("/editarAlbums")}}/><br />
+            <Button content={"Extraer Texto"} icon={"text cursor"} attached={"bottom"} onClick={()=>{navigate("/editarAlbums")}}/><br />
             <Button content={"Cerrar Sesion"} icon={"user close"} attached={"bottom"} type="submit" onClick={LogOut} />
         </div>
     )

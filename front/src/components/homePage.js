@@ -42,7 +42,7 @@ function DashboadPage() {
                     username={dashData.username}
                     name={dashData.name}
                     avatar={dashData.avatar} 
-                    descrip={dashData.detalles} 
+                    descrip={dashData.descrip} 
                 />
             </div>
         </div>
