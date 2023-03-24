@@ -217,17 +217,40 @@ const mandarFotosPublicaciones = async (req, res) =>{
   res.json({ fotosPublicaciones: datos1 })
 }
 
+/*
 const insertarAlbumNuevos = async (req, res) =>{
   let body = req.body
   insertar = await insertarNuevoAlbum(body.name)
   res.json({ AlbumIngresado: true})
 }
+*/
+
+const insertarAlbumNuevos = async (name) =>{
+  insertar = await insertarNuevoAlbum(name)
+  res.json({ AlbumIngresado: true})
+}
 
 const insertarFotoNueva = async (req, res) =>{
   let body = req.body //body.idAlbum body.base64 body.namefoto
-  const url = await saveImagePublicaciones(body.namefoto, body.base64)
-  insertarFotoenAlbum(url.Location, body.idAlbum)
-  res.json({ fotoIngresada: true, urlFoto: url.Location})
+  const etiquetas = await detectarEtiquetas(body.base64)
+  console.log("etiquetas")
+  console.log(etiquetas)
+  for (let i = 0; i < etiquetas.length; i++) {
+    const ExisteAlbum = await BuscarAlbum(etiquetas[i])
+    console.log(ExisteAlbum)
+    let verificacion = VerificacionExisteAlbum(ExisteAlbum[0].Cont)
+    if (verificacion == false){
+      const a = await insertarAlbumNuevos(etiquetas[i]);
+      const url = await saveImagePublicaciones(body.namefoto, body.base64)
+      const a1 = await ObteneridAlbum(etiquetas[i])
+      insertarFotoenAlbum(url.Location, a1, body.name, body.descrip)
+    }else if (verificacion == true){
+      const url = await saveImagePublicaciones(body.namefoto, body.base64)
+      const a1 = await ObteneridAlbum(etiquetas[i])
+      insertarFotoenAlbum(url.Location, a1, body.namefoto, body.descrip)
+    }
+  }
+  res.json({ fotoIngresada: true})
 }
 
 const ModificarAlbum = async (req, res) =>{
@@ -256,6 +279,35 @@ function VerificacionExisteUsuario(dato){
     }
   }
   return false
+}
+
+function VerificacionExisteAlbum(dato){
+  if (typeof dato === 'number'){
+    if (dato == 0){
+      return false
+    }else{
+      return true
+    }
+  }
+  return false
+}
+
+
+const detectarEtiquetas = async (base64) => {
+  let albumes = []
+  var imagen = base64
+  var params = {
+    Image: {
+      Bytes: Buffer.from(imagen, 'base64'),
+    },
+    MaxLabels: 6, // cosas o similitudes que aparecen en la imagen
+  }
+  const data = await rek.detectLabels(params).promise();
+  let etiquetas = data.Labels
+  etiquetas.forEach(element => {
+    albumes.push(element.Name)
+  });
+  return albumes
 }
 
 const saveImagePublicaciones = async (id, base64) =>{
@@ -308,6 +360,18 @@ const BuscarUsuario = async (user) => {
   return response
 }
 
+const BuscarAlbum = async (nombre) => {
+  querys = 'SELECT COUNT(idAlbum) AS Cont FROM Album WHERE nameAlbum = "' + nombre + '"'
+  const response = await connection.query(querys)
+  return response
+}
+
+const ObteneridAlbum = async (nombre) => {
+  querys = 'SELECT idAlbum FROM Album WHERE nameAlbum = "' + nombre + '"'
+  const response = await connection.query(querys)
+  return response
+}
+
 const ObtenerIdUsuario = async(user) => {
   querys = 'SELECT idUser FROM Usuario WHERE username = "' + user + '"'
   const response = await connection.query(querys)
@@ -323,7 +387,7 @@ const insertarNuevoUser = async (user, name, password) => {
 
 const insertarFotoenAlbum = (url, idAlbum) => {
   connection.query(
-    'INSERT INTO FotoPublicadas (`urlPost`, `idAlbum`) VALUES (?, ?)',
+    'INSERT INTO FotoPublicada (`urlPost`, `idAlbum`) VALUES (?, ?)',
     [url, idAlbum])
 }
 
@@ -388,7 +452,7 @@ const mandarPerfil = async() =>{
 }
 
 const mandarpublicaciones = async(variable) =>{
-  querys = 'SELECT urlPost FROM FotoPublicadas WHERE idAlbum = "' + variable + '"'
+  querys = 'SELECT urlPost FROM FotoPublicada WHERE idAlbum = "' + variable + '"'
   const response = await connection.query(querys)
   return response
 }
@@ -413,7 +477,7 @@ const ActualizarAlbum = async(name,idAlbum) =>{
 }
 
 const EliminarFotosAlbum = async(idAlbum) =>{
-  querys = 'DELETE FROM FotoPublicadas WHERE idAlbum = "' + idAlbum + '"'
+  querys = 'DELETE FROM FotoPublicada WHERE idAlbum = "' + idAlbum + '"'
   const response = await connection.query(querys)
   return response
 }

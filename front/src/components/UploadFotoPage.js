@@ -11,26 +11,17 @@ import DropdownMenu from "./DropdownMenu";
 
 function UploadPage() {
 
-    const url = "http://localhost:5000/rds/albums";
     const url1 = "http://localhost:5000/rds/NuevaFotoAlbum";
     const [base64Image, setBase64Image] = useState('');
-    const [idAlbum, setIdAlbum] = useState('');
-    const [selectOptions, setSelectOptions] = useState([])
     const [ImgUrl, setImgUrl] = useState("");
     const [name, setName] = useState("");
+    const [descrip, setDescrip] = useState("");
     const [userData, setUserData] = useState({
         image: []
     })
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get(url)
-        .then(response => {
-            console.log(response);
-            setSelectOptions(response.data);
-        }).catch(err => {
-            console.log("ERROR"+err);
-        });
         
     }, [])
 
@@ -38,6 +29,10 @@ function UploadPage() {
         setName({
             ...name,
             [event.target.name]: event.target.value
+        });
+        setDescrip({
+            ...descrip,
+            [event.target.descrip]: event.target.value
         });
         console.log(name)
     }
@@ -62,21 +57,11 @@ function UploadPage() {
           setBase64Image(reader.result);
         };
     }
-    
-    const handleSelectChange = (event) => {
-        let choice = event.target.value;
-        if (choice === "") { return }
-        let arr = choice.split("$");
-        setIdAlbum({
-            ...idAlbum,
-            ["idAlbum"]: arr[0]
-        });
-    }
 
     const sendRequest = () => {
         axios.post(url1, {
-            idAlbum: idAlbum.idAlbum,
             base64: base64Image.split(',')[1],
+            descrip: descrip,
             namefoto: name.name + "."+userData.image[0].name.split('.')[1]
         })
         .then(responseData => {
@@ -104,13 +89,26 @@ function UploadPage() {
                         <Grid centered >
                             <Grid.Column width={6}>
                                 <Grid.Row>
+                                    <label>Nombre del Archivo</label>
                                     <Form.Input required
                                         type='text'
                                         name='name'
                                         autoComplete="name"
                                         labelPosition="left"
-                                        label="Nombre del Archivo"
                                         placeholder="Ingrese el nombre de la nueva foto"
+                                        onChange={handleInputChange}
+                                    />
+                                </Grid.Row>
+                                <br></br>
+                                <Grid.Row>
+                                    <label>Descripción</label>
+                                    <Form.Input required
+                                        as='textarea'
+                                        name='descrip'
+                                        autoComplete="descrip"
+                                        labelPosition="left"
+                                        label="Descripción"
+                                        placeholder="Ingrese la descripcion de la imagen"
                                         onChange={handleInputChange}
                                     />
                                 </Grid.Row>
@@ -118,9 +116,6 @@ function UploadPage() {
                             <Grid.Column width={8}>
                                 <Grid.Row>
                                     <FileInput change={handleFilesChange} ImgUrl={ImgUrl} title={"Preview (solo imagenes)"}></FileInput>
-                                </Grid.Row>
-                                <Grid.Row>
-                                    <DropdownMenu options={selectOptions} change={handleSelectChange} title={"Album"} placeholder={"Seleccionar Album"} />
                                 </Grid.Row>
                             </Grid.Column>
 
