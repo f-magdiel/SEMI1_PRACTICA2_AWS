@@ -8,11 +8,25 @@ import {Camera} from 'react-html5-camera-photo';
 import 'react-html5-camera-photo/build/css/index.css';
 
 
+async function getBase64ImageFromUrl(imageUrl) {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+    resolve(reader.result);
+    };
+    reader.readAsDataURL(blob);
+    });
+}
 
 function LoginFaceID(){
 
     const [photo, setPhoto] = useState(null);
     const [image, setImage] = useState(null);
+    const [imagen2, setImagen2] = useState(null);
+    const [username, setUsername] = useState("");
 
     const handleTakePhoto = (dataUri) => {
         setPhoto(dataUri);
@@ -21,36 +35,75 @@ function LoginFaceID(){
         console.log(base64Image)
 
     }
+
+    const handleInputChange = (event) => {
+        setUsername({
+            ...username,
+            [event.target.name]: event.target.value
+        });
+    
+            console.log(username);
+
+    }
+
     const navigate = useNavigate();
     const handleResetPhoto = () => {
         setPhoto(null);
     }
 
     const sendDatatoServer = () => {
-        axios.post("http://localhost:5000/rds/faceid", {
-            imagen64: image
+        axios.post("http://localhost:5000/rds/getfotoperfil", {
+            username: username
         })
         .then(response => {
-            console.log(response.data.login);
-            if (response.data.login == true){
-                sessionStorage.setItem("user", 1111111111);
-                alert("Usuario logueado correctamente");
-                navigate("/dashboard");
-            }else if (response.data.login == false){
-                alert("Credenciales incorrectas, por favor revise los datos");
-            }
-        }).catch(err => {
+            // Convertir fotoperfil a base64
+            getBase64ImageFromUrl(response.data[0].urlPerfil)
+                .then(base64Image => {
+                    // Establecer imagen2 con la cadena base64 de la imagen de perfil
+                    const base64ImageString = base64Image.split(",")[1];
+                    setImagen2(base64ImageString);
+                    
+                    // Hacer la segunda solicitud POST con la imagen2 establecida
+                    axios.post("http://localhost:5000/rekognition/compararfotos", {
+                        imagen1: image,
+                        imagen2: base64ImageString
+                    })
+                    .then(response => {
+                        console.log(response.data.login);
+                        if (response.data.login == true) {
+                            alert("Usuario logueado correctamente");
+                            navigate("/dashboard");
+                        } else if (response.data.login == false) {
+                            alert("Credenciales incorrectas, por favor revise los datos");
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        })
+        .catch(err => {
             console.log(err);
         });
-    }
+    };
+    
     
     return (
 
         <div className="upload-page">
-
+            
             <div className="upload-page-header">
                 <div className="upload-page-header-txt">
                     <label> Tomar foto </label><Icon name="photo" />
+                </div>
+                    <div className="Login-Form-Body">
+                <Form>
+                        <Form.Input icon={"user"} /*required*/ autoComplete="username" type='text' name='username' label="Usuario / e-mail" labelPosition="left" placeholder='Enter your username/e-mail' onChange={handleInputChange}  />
+                        
+                    </Form>
                 </div>
                 <Divider />
             </div>
@@ -70,10 +123,11 @@ function LoginFaceID(){
                             {photo ? (
                                     <div>
                                         <PreviewPhoto photo={photo} />
-                                        <Button  className="ui black button" type="button">Iniciar Sesion</Button>
+                                        <Button  className="ui black button" type="button" onClick={sendDatatoServer}>Iniciar Sesion</Button>
                                         <button className="ui black button" type="button" onClick={handleResetPhoto}>Tomar otra foto</button>
                                     </div>
                                 ) : (
+                                    
                                     <Camera
                                     onTakePhoto={(dataUri) => {
                                         handleTakePhoto(dataUri);

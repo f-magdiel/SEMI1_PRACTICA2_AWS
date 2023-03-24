@@ -1,6 +1,6 @@
 var Router = require('express')
 const bodyParser = require('body-parser');
-const { mandarFotosPublicaciones,mandarFotosPerfil,DatosCredenciales,CerrarSesion,Login,insertarFotoNueva, ModificarAlbum,EliminarAlbum, PaginaInicio,ActualizacionDatos,ObtenerAlbumes, ActualizacionFotoPerfil, NuevoUsuario, insertarAlbumNuevos } = require('../controller/rds.controller')
+const { GetFotoPerfil,mandarFotosPublicaciones,mandarFotosPerfil,DatosCredenciales,CerrarSesion,Login,insertarFotoNueva, ModificarAlbum,EliminarAlbum, PaginaInicio,ActualizacionDatos,ObtenerAlbumes, ActualizacionFotoPerfil, NuevoUsuario, insertarAlbumNuevos } = require('../controller/rds.controller')
 
 const router = Router()
 
@@ -18,4 +18,5 @@ router.post('/ModificarAlbum', ModificarAlbum)
 router.post('/EliminarAlbum', EliminarAlbum)
 router.get('/fotosPerfil', mandarFotosPerfil)
 router.get('/fotosPublicaciones', mandarFotosPublicaciones)
+router.post('/getfotoperfil', GetFotoPerfil)
 module.exports = router

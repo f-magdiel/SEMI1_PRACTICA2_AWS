@@ -41,6 +41,17 @@ function encryptPassword(password) {
   return CryptoJS.MD5(password).toString();
 }
 
+const GetFotoPerfil = async (req, res) => {
+  let user = req.body.username
+  console.log(user)
+  const iduser = await ObtenerIdUsuario(user.username)
+  console.log(iduser)
+  const result = await ObtenerFotoPerfil(iduser[0].idUser)
+  console.log(result)
+  res.json(result)
+
+}
+
 const Descripcion = async (base64) =>{
   var imagen = base64
   let response = ""
@@ -314,6 +325,12 @@ const ObtenerIdUsuario = async(user) => {
   return response
 }
 
+const ObtenerFotoPerfil = async(user) => {
+  querys = 'SELECT urlPerfil FROM FotoPerfin WHERE idUser = "' + user + '"'
+  const response = await connection.query(querys)
+  return response
+}
+
 const insertarNuevoUser = async (user, name, password) => {
   const response = await connection.query(
     'INSERT INTO Usuario (`username`, `nombre`, `pass`) VALUES (?, ?, ?)',
@@ -439,4 +456,5 @@ module.exports = {
   DatosCredenciales,
   mandarFotosPerfil,
   mandarFotosPublicaciones,
+  GetFotoPerfil,
 }

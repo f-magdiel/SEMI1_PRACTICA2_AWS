@@ -98,9 +98,12 @@ const compararFotos = async (req, res) => {
   }
   rek.compareFaces(params, function (err, data) {
     if (err) {
-      res.json({ mensaje: err })
+      res.json({ login:false, mensaje: 'Error' })
     } else {
-      res.json({ Comparacion: data.FaceMatches })
+      
+      if (data.FaceMatches[0].Similarity >= 50) {
+        res.json({ login: true , mensaje:"Se ha iniciado sesion"})
+      } 
     }
   })
 }
