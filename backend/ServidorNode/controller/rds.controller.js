@@ -113,7 +113,7 @@ const Descripcion = async (base64) =>{
 
 const NuevoUsuario = async (req, res) => {
   let body = req.body //body.user, body.name, body.password, body.base64, body.namefoto
-  console.log(body)
+  //console.log(body)
   const ExisteUsuario = await BuscarUsuario(body.user)
   let verificacion = VerificacionExisteUsuario(ExisteUsuario[0].Cont)
   if (verificacion == false){
@@ -150,16 +150,16 @@ const Login = async (req, res) => {
 const PaginaInicio = async (req, res) => {
   const DatosUsuarios = await DatosUsuario()
   const FotoPerfil = await DatosFotoPerfil()
-  console.log('Datos Enviados Dashboard')
-  console.log({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
+  //console.log('Datos Enviados Dashboard')
+  //console.log({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
   res.json({ username: DatosUsuarios[0].username, nombre: DatosUsuarios[0].nombre, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
 }
 
 const DatosCredenciales = async (req, res) => {
   const DatosUsuaris = await DatosUsuarioss()
   const FotoPerfil = await DatosFotoPerfil()
-  console.log('Datos Enviados Dashboard')
-  console.log({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre, pass: DatosUsuaris[0].pass ,urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
+  //console.log('Datos Enviados Dashboard')
+  //console.log({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre, pass: DatosUsuaris[0].pass ,urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
   res.json({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre,pass: DatosUsuaris[0].pass, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
 }
 
@@ -238,7 +238,6 @@ const insertarAlbumNuevos = async (req, res) =>{
 
 const insertarAlbumNuevos = async (name) =>{
   insertar = await insertarNuevoAlbum(name)
-  res.json({ AlbumIngresado: true})
 }
 
 const insertarFotoNueva = async (req, res) =>{
@@ -248,17 +247,17 @@ const insertarFotoNueva = async (req, res) =>{
   console.log(etiquetas)
   for (let i = 0; i < etiquetas.length; i++) {
     const ExisteAlbum = await BuscarAlbum(etiquetas[i])
-    console.log(ExisteAlbum)
+    
     let verificacion = VerificacionExisteAlbum(ExisteAlbum[0].Cont)
     if (verificacion == false){
       const a = await insertarAlbumNuevos(etiquetas[i]);
       const url = await saveImagePublicaciones(body.namefoto, body.base64)
-      const a1 = await ObteneridAlbum(etiquetas[i])
-      insertarFotoenAlbum(url.Location, a1, body.name, body.descrip)
+      const a11 = await ObteneridAlbum(etiquetas[i])
+      insertarFotoenAlbum(url.Location, a11[0].idAlbum, body.name, body.descrip)
     }else if (verificacion == true){
       const url = await saveImagePublicaciones(body.namefoto, body.base64)
       const a1 = await ObteneridAlbum(etiquetas[i])
-      insertarFotoenAlbum(url.Location, a1, body.namefoto, body.descrip)
+      insertarFotoenAlbum(url.Location, a1[0].idAlbum, body.namefoto, body.descrip)
     }
   }
   res.json({ fotoIngresada: true})
@@ -272,11 +271,11 @@ const ModificarAlbum = async (req, res) =>{
 
 const EliminarAlbum = async (req, res)=>{
   let body = req.body
-  console.log(body)
+  //console.log(body)
   const url = await EliminarFotosAlbum(body.idAlbum)
   if (1 == 1){
     const url1 = await EliminarAlbumCs(body.idAlbum)
-    console.log(url1)
+    //console.log(url1)
   }
   res.json({ AlbumEliminado: true})
 }
@@ -345,11 +344,11 @@ const saveImagePublicaciones = async (id, base64) =>{
 const saveImagePerfil = async (id, base64) =>{
   var id = id
   var foto = base64
-  console.log(id)
+  //(id)
   //carpeta y nombre que quieran darle a la imagen
   var cadena = 'Fotos_Perfil/' + id // fotos -> se llama la carpeta UBICACION
   //se convierte la base64 a bytes
-  console.log(cadena)
+  //console.log(cadena)
   let buff = new Buffer.from(foto, 'base64')
 
   var s3 = new AWS.S3(aws_keys.s3) // se crea una variable que pueda tener acceso a las caracteristicas de S3
@@ -402,10 +401,12 @@ const insertarNuevoUser = async (user, name, password) => {
   return response
 }
 
-const insertarFotoenAlbum = (url, idAlbum) => {
+const insertarFotoenAlbum = (url, idAlbum, nombre, desc) => {
+  //console.log("Datos insert")
+  //console.log(nombre)
   connection.query(
-    'INSERT INTO FotoPublicada (`urlPost`, `idAlbum`) VALUES (?, ?)',
-    [url, idAlbum])
+    'INSERT INTO FotoPublicada (`urlPost`, `idAlbum`, `nombreFoto`, `descripcion`) VALUES (?, ?, ?, ?)',
+    [url, idAlbum, nombre, desc])
 }
 
 const insertarFotoPerfil = (url, idAlbum, detalles) => {

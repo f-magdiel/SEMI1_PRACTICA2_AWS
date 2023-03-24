@@ -30,10 +30,8 @@ function UploadPage() {
             ...name,
             [event.target.name]: event.target.value
         });
-        setDescrip({
-            ...descrip,
-            [event.target.descrip]: event.target.value
-        });
+        setDescrip(event.target.value);
+        console.log(descrip)
         console.log(name)
     }
 
@@ -59,6 +57,7 @@ function UploadPage() {
     }
 
     const sendRequest = () => {
+        console.log(descrip)
         axios.post(url1, {
             base64: base64Image.split(',')[1],
             descrip: descrip,
@@ -106,8 +105,6 @@ function UploadPage() {
                                         as='textarea'
                                         name='descrip'
                                         autoComplete="descrip"
-                                        labelPosition="left"
-                                        label="Descripción"
                                         placeholder="Ingrese la descripcion de la imagen"
                                         onChange={handleInputChange}
                                     />
