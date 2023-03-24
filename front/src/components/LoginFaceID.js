@@ -21,6 +21,8 @@ async function getBase64ImageFromUrl(imageUrl) {
     });
 }
 
+  
+
 function LoginFaceID(){
 
     const [photo, setPhoto] = useState(null);
@@ -31,9 +33,11 @@ function LoginFaceID(){
     const handleTakePhoto = (dataUri) => {
         setPhoto(dataUri);
         const base64Image = btoa(dataUri);
-        setImage(base64Image);
-        console.log(base64Image)
+        const base = dataUri.substring("data:image/jpg;base64,".length);
 
+        console.log("Se capturó la foto")
+        console.log(base);
+        setImage(base);
     }
 
     const handleInputChange = (event) => {

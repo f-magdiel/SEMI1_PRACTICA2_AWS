@@ -32,7 +32,7 @@ function DashboadPage() {
             <div className="Dashboard-Page-Body">
 
                 <div className="dashboard-page-body-title">
-                    <label>Albums</label>
+                    <label>Extraer Texto</label>
                     <Divider />
                 </div>
 

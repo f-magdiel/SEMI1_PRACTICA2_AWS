@@ -46,6 +46,7 @@ const GetFotoPerfil = async (req, res) => {
   console.log(user)
   const iduser = await ObtenerIdUsuario(user.username)
   console.log(iduser)
+  UsuarioLogueado = iduser[0].idUser
   const result = await ObtenerFotoPerfil(iduser[0].idUser)
   console.log(result)
   res.json(result)

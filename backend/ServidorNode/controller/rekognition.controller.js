@@ -94,14 +94,15 @@ const compararFotos = async (req, res) => {
     TargetImage: {
       Bytes: Buffer.from(imagen2, 'base64'), // Imagen para comparar
     },
-    SimilarityThreshold: '50', // porcentaje para hacer en la comparacion, limite de similitud
+    SimilarityThreshold: '20', // porcentaje para hacer en la comparacion, limite de similitud
   }
   rek.compareFaces(params, function (err, data) {
     if (err) {
+      console.log("Error")
       res.json({ login:false, mensaje: 'Error' })
     } else {
-      
-      if (data.FaceMatches[0].Similarity >= 50) {
+      console.log(data.FaceMatches[0].Similarity)
+      if (data.FaceMatches[0].Similarity >= 20) {
         res.json({ login: true , mensaje:"Se ha iniciado sesion"})
       } 
     }
