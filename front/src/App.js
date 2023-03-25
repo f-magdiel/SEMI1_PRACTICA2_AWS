@@ -9,6 +9,7 @@ import UploadFotoPage from './components/UploadFotoPage';
 import EditarPerfilPage from './components/EditarPerfilPage';
 import VerFotoPage  from './components/VerFotoPage';
 import EditarAlbumPage from './components/editarAlbumsPage';
+import Dasd from './components/Nuevo';
 
 import LoginFaceID from './components/LoginFaceID';
 
@@ -27,6 +28,7 @@ function App() {
           <Route path="/verFoto" element={<VerFotoPage/>}/>
           <Route path="/editarAlbums" element={<EditarAlbumPage/>}/>
           <Route path="/FaceID" element={<LoginFaceID/>}/>
+          <Route path="/Traduccion" element={<Dasd/>}/>
 
 
       </Routes>

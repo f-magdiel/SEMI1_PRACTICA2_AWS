@@ -1,12 +1,14 @@
 // se manda a llamar las credenciales de Mysql
 const aws_keys = require('../helpers/aws_keys')
 var AWS = require('aws-sdk')
+const translate = new AWS.Translate(aws_keys.translate)
 const rek = new AWS.Rekognition(aws_keys.rekognition)
 require('dotenv').config()
 const CryptoJS = require('crypto-js');
 
 const mysql = require('mysql2/promise');
 let UsuarioLogueado = 0
+let Seleccionado = ""
 class Database {
   constructor(config) {
     this.pool = mysql.createPool(config);
@@ -51,6 +53,14 @@ const GetFotoPerfil = async (req, res) => {
   console.log(result)
   res.json(result)
 
+}
+
+const GuardarInfo = (req, res) => {
+  let user = req.body.imagen
+  console.log(user)
+  console.log(req.body.imagen)
+  Seleccionado = user
+  res.json("ahhh prro")
 }
 
 const Descripcion = async (base64) =>{
@@ -162,6 +172,13 @@ const DatosCredenciales = async (req, res) => {
   //console.log('Datos Enviados Dashboard')
   //console.log({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre, pass: DatosUsuaris[0].pass ,urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
   res.json({ username: DatosUsuaris[0].username, nombre: DatosUsuaris[0].nombre,pass: DatosUsuaris[0].pass, urlFoto: FotoPerfil[0].urlPerfil, detalles: FotoPerfil[0].detalles })
+}
+
+const Traduccion = async (req, res) => {
+  const descrip = await DescripcionImagen(Seleccionado)
+  console.log(descrip)
+  console.log(descrip[0])
+  res.json({ descripcion: descrip[0], urlPost: Seleccionado})
 }
 
 const CerrarSesion = (req, res) =>{
@@ -365,6 +382,18 @@ const saveImagePerfil = async (id, base64) =>{
   return response
 }
 
+const traducirTexto = async (req, res) =>{
+  let body = req.body //body.idAlbum body.name
+  let params = {
+    SourceLanguageCode: 'auto',
+    TargetLanguageCode: body.lenguaje,
+    Text: body.texto,
+  }
+  const data = await translate.translateText(params).promise()
+  console.log(data)
+  res.json({ traduccion: data })
+}
+
 const BuscarUsuario = async (user) => {
   querys = 'SELECT COUNT(idUser) AS Cont FROM Usuario WHERE username = "' + user + '"'
   const response = await connection.query(querys)
@@ -424,6 +453,12 @@ const ExistesUsuario = async(user, pass) =>{
 
 const DatosUsuario = async() =>{
   querys = 'SELECT username, nombre FROM Usuario WHERE idUser = "' + UsuarioLogueado + '"'
+  const response = await connection.query(querys)
+  return response
+}
+
+const DescripcionImagen = async(idPost) =>{
+  querys = 'SELECT descripcion FROM FotoPublicada WHERE urlPost = "' + Seleccionado + '"'
   const response = await connection.query(querys)
   return response
 }
@@ -523,4 +558,7 @@ module.exports = {
   mandarFotosPerfil,
   mandarFotosPublicaciones,
   GetFotoPerfil,
+  Traduccion,
+  GuardarInfo,
+  traducirTexto,
 }

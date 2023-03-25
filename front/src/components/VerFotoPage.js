@@ -21,7 +21,7 @@ function VerFotoPage() {
         }));
 
     }, []);
-  
+    
    
     return (
         <div>
