@@ -10,6 +10,7 @@ import EditarPerfilPage from './components/EditarPerfilPage';
 import VerFotoPage  from './components/VerFotoPage';
 import EditarAlbumPage from './components/editarAlbumsPage';
 import Dasd from './components/Nuevo';
+import PreChat from './components/PreChat'
 
 import LoginFaceID from './components/LoginFaceID';
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/editarAlbums" element={<EditarAlbumPage/>}/>
           <Route path="/FaceID" element={<LoginFaceID/>}/>
           <Route path="/Traduccion" element={<Dasd/>}/>
+          <Route path="/Chat" element={<PreChat/>}/>
 
 
       </Routes>
